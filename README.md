@@ -25,4 +25,6 @@ Set `OPENROUTER_API_KEY` to enable AI proposals. Set your own PayPal Sandbox cre
 
 Run the solver checks with `npx tsx --test tests/financial_invariants.test.ts`. The broader suite uses seeded local data and some tests expect a running development server. Use a disposable database for integration tests. Browser tests run with `npm run test:e2e` after installing Playwright Chromium.
 
-Crowd animation adapted from [Skiper UI](https://skiper-ui.com). Character illustrations from [Open Peeps](https://www.openpeeps.com/) by Pablo Stanley. See [LICENSE](LICENSE) for the project license.
+This source snapshot uses the vector brand icon in place of the original raster artwork.
+
+Optional crowd-animation code adapted from [Skiper UI](https://skiper-ui.com). Character illustrations from [Open Peeps](https://www.openpeeps.com/) by Pablo Stanley. See [LICENSE](LICENSE) for the project license.

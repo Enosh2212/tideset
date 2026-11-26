@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none" width="280" height="64">
+  <!-- Bothway Official Icon -->
+  <g transform="translate(4, 4) scale(0.1458)">
+    <!-- Soft circular badge -->
+    <circle cx="192" cy="192" r="158" fill="#E0EFE7" />
+    <!-- Left Agreement -->
+    <g transform="rotate(-10 145 200)">
+      <rect x="95" y="105" width="105" height="160" rx="14" fill="#FFFEF9" stroke="#202C2B" stroke-width="8" stroke-linejoin="round" />
+      <path d="M165 105 L165 135 L200 135" fill="#E0EFE7" stroke="#202C2B" stroke-width="8" stroke-linejoin="round" />
+      <!-- Eyes & Smile -->
+      <circle cx="125" cy="170" r="5" fill="#202C2B" />
+      <circle cx="155" cy="165" r="5" fill="#202C2B" />
+      <path d="M130 190 Q145 202 160 188" stroke="#202C2B" stroke-width="6" stroke-linecap="round" fill="none" />
+      <!-- Milestones lines -->
+      <line x1="115" y1="225" x2="175" y2="225" stroke="#397E78" stroke-width="9" stroke-linecap="round" />
+      <line x1="115" y1="245" x2="155" y2="245" stroke="#397E78" stroke-width="9" stroke-linecap="round" />
+    </g>
+    <!-- Right Agreement -->
+    <g transform="rotate(10 240 200)">
+      <rect x="185" y="105" width="105" height="160" rx="14" fill="#FFFEF9" stroke="#202C2B" stroke-width="8" stroke-linejoin="round" />
+      <path d="M255 105 L255 135 L290 135" fill="#E0EFE7" stroke="#202C2B" stroke-width="8" stroke-linejoin="round" />
+      <!-- Eyes & Smile -->
+      <circle cx="215" cy="165" r="5" fill="#202C2B" />
+      <circle cx="245" cy="170" r="5" fill="#202C2B" />
+      <path d="M220 188 Q235 202 250 190" stroke="#202C2B" stroke-width="6" stroke-linecap="round" fill="none" />
+      <!-- Milestones lines -->
+      <line x1="205" y1="225" x2="265" y2="225" stroke="#397E78" stroke-width="9" stroke-linecap="round" />
+      <line x1="205" y1="245" x2="245" y2="245" stroke="#397E78" stroke-width="9" stroke-linecap="round" />
+    </g>
+    <!-- Bottom Connecting Bridge & 3 Dots -->
+    <path d="M138 275 Q192 295 246 275" stroke="#202C2B" stroke-width="9" fill="none" stroke-linecap="round" />
+    <circle cx="166" cy="287" r="10" fill="#FFFEF9" stroke="#202C2B" stroke-width="6" />
+    <circle cx="192" cy="290" r="10" fill="#FFFEF9" stroke="#202C2B" stroke-width="6" />
+    <circle cx="218" cy="287" r="10" fill="#FFFEF9" stroke="#202C2B" stroke-width="6" />
+  </g>
+  <!-- Wordmark Text -->
+  <text x="74" y="38" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="800" letter-spacing="0.08em" fill="#0F172A">BOTHWAY</text>
+  <text x="75" y="52" font-family="system-ui, -apple-system, sans-serif" font-size="9" font-weight="700" letter-spacing="0.16em" fill="#64748B">FINANCIAL WORKSPACE</text>
+</svg>

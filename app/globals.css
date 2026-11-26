@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FFFFFF;
+  --foreground: #0F172A;
+  --surface: #FFFFFF;
+  --surface-subtle: #F8FAFC;
+  --tide-teal: #2563EB;
+  --tide-mint: #EFF6FF;
+  --tide-border: #E2E8F0;
+  --tide-warm: #EFF6FF;
+  --primary-blue: #2563EB;
+  --border-color: #E2E8F0;
+}
+
+/* Reduced Motion Accessibility Mode */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+/* 3D Transform Utilities for Interactive Process Cards */
+.perspective-1000 {
+  perspective: 1000px;
+}
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+.backface-hidden {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* Modern Clean Fintech Card Primitives */
+.glass-panel,
+.card-clean {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+}
+
+.glass-panel-elevated,
+.card-clean-elevated {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 14px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+}
+
+.glass-input,
+.input-clean {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+  transition: all 0.15s ease-in-out;
+}
+
+.glass-input:focus,
+.input-clean:focus {
+  outline: none;
+  border-color: #0052CC;
+  box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.15);
+}
+
+.glass-badge,
+.badge-clean {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  color: #334155;
+}
+
+/* Primary Fintech Action Button */
+.btn-primary-trust {
+  background-color: #0052CC;
+  color: #FFFFFF;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.btn-primary-trust:hover {
+  background-color: #003D99;
+}
+
+/* Smooth subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}

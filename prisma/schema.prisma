@@ -1,0 +1,289 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  passwordHash  String?
+  avatarUrl     String?
+  emailVerified DateTime?
+  role          String    @default("CUSTOMER") // Legacy fallback: "CUSTOMER" | "PROVIDER"
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  accounts            Account[]
+  sessions            Session[]
+  participants        AgreementParticipant[]
+  createdAgreements   Agreement[]            @relation("CreatedAgreements")
+  invitationsSent     Invitation[]           @relation("SentInvitations")
+  auditEvents         AuditEvent[]
+  openedDisputes      DisputeRecord[]
+  deliverableReviews  DeliverableReview[]
+  decisions           AgreementDecision[]
+
+  // Legacy relations for backward compatibility
+  providedAgreements  Agreement[]            @relation("ProviderAgreements")
+  customerAgreements  Agreement[]            @relation("CustomerAgreements")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String  @default("oauth")
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Agreement {
+  id                   String                 @id @default(cuid())
+  title                String
+  description          String
+  totalAmountCents     Int
+  currency             String                 @default("USD")
+  status               String                 @default("DRAFT") // "DRAFT" | "PROPOSED" | "ACCEPTED" | "ACTIVE" | "COMPLETED" | "CANCELLED" | "DISPUTED"
+  createdById          String?
+  providerId           String?
+  customerId           String?
+  currentVersionNumber Int                    @default(1)
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  createdBy            User?                  @relation("CreatedAgreements", fields: [createdById], references: [id], onDelete: SetNull)
+  provider             User?                  @relation("ProviderAgreements", fields: [providerId], references: [id], onDelete: SetNull)
+  customer             User?                  @relation("CustomerAgreements", fields: [customerId], references: [id], onDelete: SetNull)
+
+  participants         AgreementParticipant[]
+  versions             AgreementVersion[]
+  invitations          Invitation[]
+  auditEvents          AuditEvent[]
+  disputes             DisputeRecord[]
+  decisions            AgreementDecision[]
+}
+
+model AgreementParticipant {
+  id           String    @id @default(cuid())
+  agreementId  String
+  userId       String?
+  invitedEmail String
+  role         String    // "CUSTOMER" | "PROVIDER"
+  status       String    @default("ACTIVE") // "INVITED" | "ACTIVE" | "DECLINED" | "REMOVED"
+  joinedAt     DateTime  @default(now())
+
+  agreement    Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  user         User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([agreementId, invitedEmail])
+}
+
+model Invitation {
+  id           String    @id @default(cuid())
+  agreementId  String
+  invitedEmail String
+  role         String    // "CUSTOMER" | "PROVIDER"
+  token        String    @unique
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  createdById  String
+  createdAt    DateTime  @default(now())
+
+  agreement    Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  createdBy    User      @relation("SentInvitations", fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model AgreementVersion {
+  id                    String              @id @default(cuid())
+  agreementId           String
+  versionNumber         Int
+  totalAmountCents      Int
+  proposalSummary       String
+  customerApprovalState String              @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  providerApprovalState String              @default("PENDING") // "PENDING" | "APPROVED" | "REJECTED"
+  customerApprovedAt    DateTime?
+  providerApprovedAt    DateTime?
+  solverRationale       String
+  createdAt             DateTime            @default(now())
+
+  agreement             Agreement           @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  stages                Stage[]
+  decisions             AgreementDecision[]
+}
+
+model Stage {
+  id                  String           @id @default(cuid())
+  versionId           String
+  sequenceIndex       Int
+  title               String
+  description         String
+  amountCents         Int
+  dueDate             DateTime
+  deliveryDate        DateTime
+  status              String           @default("LOCKED") // "LOCKED" | "PAYMENT_PENDING" | "PAYMENT_VERIFIED" | "IN_PROGRESS" | "SUBMITTED" | "REVISION_REQUESTED" | "ACCEPTED" | "DISPUTED" | "PAUSED"
+  paymentStatus       String           @default("UNPAID") // "UNPAID" | "CHECKOUT_CREATED" | "APPROVED" | "CAPTURE_PENDING" | "PAID"
+  deliveryStatus      String           @default("NOT_STARTED") // "NOT_STARTED" | "IN_PROGRESS" | "SUBMITTED" | "ACCEPTED" | "REVISION_REQUESTED"
+  paypalInvoiceId     String?
+  paypalInvoiceUrl    String?
+  paypalOrderId       String?
+
+  // Two-way milestone protection fields
+  acceptanceCriteria  String?          // JSON array of strings
+  deliverableEvidence String?          // JSON object { repoUrl, previewUrl, notes, artifacts }
+  reviewDeadline      DateTime?        // 5-day review window after submission
+  submittedAt         DateTime?
+  acceptedAt          DateTime?
+  revisionNotes       String?          // Latest revision request
+  revisionHistory     String?          // JSON array of revision rounds
+  disputeReason       String?
+  disputeStatus       String?          // "OPEN" | "RESOLVED"
+  pausedReason        String?
+
+  version             AgreementVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  paymentRecords      PaymentRecord[]
+  paymentAttempts     PaymentAttempt[]
+  deliverables        Deliverable[]
+  auditEvents         AuditEvent[]
+  disputes            DisputeRecord[]
+}
+
+model PaymentAttempt {
+  id            String   @id @default(cuid())
+  stageId       String
+  paypalOrderId String   @unique
+  amountCents   Int
+  currency      String   @default("USD")
+  status        String   @default("CREATED") // "CREATED" | "APPROVED" | "CAPTURED" | "CANCELLED" | "EXPIRED"
+  clientIp      String?
+  createdAt     DateTime @default(now())
+
+  stage         Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+}
+
+model PaymentRecord {
+  id                  String   @id @default(cuid())
+  stageId             String
+  paypalCaptureId     String   @unique
+  amountCapturedCents Int
+  currency            String   @default("USD")
+  payerEmail          String?
+  status              String   @default("COMPLETED") // "COMPLETED" | "REFUNDED" | "FAILED"
+  settlementType      String   @default("REAL_SANDBOX_PAYPAL") // "REAL_SANDBOX_PAYPAL" | "SIMULATED_LOCAL_TEST"
+  rawPayload          String?  // JSON string
+  verifiedAt          DateTime @default(now())
+
+  stage               Stage    @relation(fields: [stageId], references: [id], onDelete: Cascade)
+}
+
+model Deliverable {
+  id            String              @id @default(cuid())
+  stageId       String
+  submittedById String
+  title         String              @default("Milestone Deliverables Submission")
+  notes         String
+  repoUrl       String?
+  previewUrl    String?
+  artifactsJson String?
+  submittedAt   DateTime            @default(now())
+
+  stage         Stage               @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  reviews       DeliverableReview[]
+}
+
+model DeliverableReview {
+  id            String      @id @default(cuid())
+  deliverableId String
+  reviewerId    String
+  decision      String      // "ACCEPTED" | "REVISION_REQUESTED"
+  notes         String
+  reviewedAt    DateTime    @default(now())
+
+  deliverable   Deliverable @relation(fields: [deliverableId], references: [id], onDelete: Cascade)
+  reviewer      User        @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+}
+
+model AgreementDecision {
+  id           String           @id @default(cuid())
+  agreementId  String
+  versionId    String
+  actorId      String
+  decisionType String           // "APPROVE" | "REJECT" | "COUNTER"
+  rationale    String?
+  timestamp    DateTime         @default(now())
+
+  agreement    Agreement        @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  version      AgreementVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  actor        User             @relation(fields: [actorId], references: [id], onDelete: Cascade)
+}
+
+model DisputeRecord {
+  id                  String    @id @default(cuid())
+  agreementId         String
+  stageId             String
+  openedById          String
+  reason              String
+  proposedResolution  String?   // "REVISE_WITHOUT_CHARGE" | "PARTIAL_SETTLEMENT" | "MUTUAL_CANCELLATION"
+  proposedRefundCents Int?
+  status              String    @default("OPEN") // "OPEN" | "RESOLVED_MUTUAL_AGREEMENT" | "CANCELLED"
+  resolutionNotes     String?
+  resolvedAt          DateTime?
+  createdAt           DateTime  @default(now())
+
+  agreement           Agreement @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  stage               Stage     @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  openedBy            User      @relation(fields: [openedById], references: [id], onDelete: Cascade)
+}
+
+model WebhookEvent {
+  id            String   @id @default(cuid())
+  paypalEventId String   @unique
+  eventType     String
+  resourceType  String?
+  summary       String?
+  payloadJson   String
+  verified      Boolean  @default(false)
+  status        String   @default("PROCESSED") // "PROCESSED" | "FAILED" | "DUPLICATE"
+  receivedAt    DateTime @default(now())
+}
+
+model AuditEvent {
+  id          String     @id @default(cuid())
+  agreementId String?
+  stageId     String?
+  actorId     String?
+  eventType   String
+  details     String
+  ipAddress   String?
+  timestamp   DateTime   @default(now())
+
+  agreement   Agreement? @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  stage       Stage?     @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  actor       User?      @relation(fields: [actorId], references: [id], onDelete: SetNull)
+}
